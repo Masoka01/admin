@@ -36,27 +36,27 @@ function formatTanggal(dateStr) {
 }
 
 /*********************************
- * LOAD & GROUP DATA
+ * LOAD DATA
  *********************************/
 async function loadData() {
   const snap = await db.collection("attendance").get();
-  const data = {};
+  const grouped = {};
 
   snap.forEach((doc) => {
     const d = doc.data();
     const month = getMonthKey(d.tanggal);
 
-    if (!data[month]) data[month] = {};
-    if (!data[month][d.nama]) data[month][d.nama] = [];
+    if (!grouped[month]) grouped[month] = {};
+    if (!grouped[month][d.nama]) grouped[month][d.nama] = [];
 
-    data[month][d.nama].push(d);
+    grouped[month][d.nama].push(d);
   });
 
-  render(data);
+  render(grouped);
 }
 
 /*********************************
- * RENDER UI
+ * RENDER
  *********************************/
 function render(data) {
   const container = document.getElementById("months");
@@ -65,58 +65,90 @@ function render(data) {
   Object.keys(data)
     .sort()
     .forEach((monthKey) => {
-      const monthDiv = document.createElement("div");
-      monthDiv.className = "month";
+      const month = document.createElement("div");
+      month.className = "month-card";
 
-      const namesHtml = Object.keys(data[monthKey])
+      const names = Object.keys(data[monthKey]);
+
+      const left = names
         .map(
-          (nama) => `
-      <div class="name" onclick="toggleDetails(this)">
-        ${nama}
-        <div class="details">
-          ${data[monthKey][nama]
-            .map(
-              (r) => `
-            <div class="detail-row">
-              <span>${formatTanggal(r.tanggal)}</span>
-              <span>${r.checkin || "-"} - ${r.checkout || "-"}</span>
-            </div>
-          `
-            )
-            .join("")}
-        </div>
+          (n, i) => `
+      <div class="employee ${i === 0 ? "active" : ""}" data-name="${n}">
+        ${n}
       </div>
     `
         )
         .join("");
 
-      monthDiv.innerHTML = `
-      <div class="month-header" onclick="toggleNames(this)">
-        <span>📁 ${getMonthLabel(monthKey)}</span>
-        <button onclick="deleteMonth(event, '${monthKey}')">Hapus Bulan</button>
+      const right = names
+        .map(
+          (n, i) => `
+      <div class="detail ${i === 0 ? "active" : ""}" data-detail="${n}">
+        <h3>${n}</h3>
+        ${data[monthKey][n]
+          .map(
+            (r) => `
+          <div class="row">
+            <span>${formatTanggal(r.tanggal)}</span>
+            <span>${r.checkin || "-"} - ${r.checkout || "-"}</span>
+          </div>
+        `
+          )
+          .join("")}
       </div>
-      <div class="names">${namesHtml}</div>
+    `
+        )
+        .join("");
+
+      month.innerHTML = `
+      <div class="month-header" onclick="toggleMonth(this)">
+        <span>📁 ${getMonthLabel(monthKey)}</span>
+        <button onclick="deleteMonth(event,'${monthKey}')">Hapus Bulan</button>
+      </div>
+
+      <div class="split-view">
+        <aside class="employee-panel">${left}</aside>
+        <section class="detail-panel">${right}</section>
+      </div>
     `;
 
-      container.appendChild(monthDiv);
+      container.appendChild(month);
     });
+
+  bindEmployeeClick();
 }
 
 /*********************************
- * TOGGLE UI
+ * INTERACTION
  *********************************/
-function toggleNames(el) {
-  el.nextElementSibling.style.display =
-    el.nextElementSibling.style.display === "block" ? "none" : "block";
+function toggleMonth(el) {
+  const split = el.nextElementSibling;
+  split.style.display = split.style.display === "grid" ? "none" : "grid";
 }
 
-function toggleDetails(el) {
-  const details = el.querySelector(".details");
-  details.style.display = details.style.display === "block" ? "none" : "block";
+function bindEmployeeClick() {
+  document.querySelectorAll(".employee").forEach((emp) => {
+    emp.onclick = () => {
+      const panel = emp.closest(".split-view");
+
+      panel
+        .querySelectorAll(".employee")
+        .forEach((e) => e.classList.remove("active"));
+
+      panel
+        .querySelectorAll(".detail")
+        .forEach((d) => d.classList.remove("active"));
+
+      emp.classList.add("active");
+      panel
+        .querySelector(`.detail[data-detail="${emp.dataset.name}"]`)
+        .classList.add("active");
+    };
+  });
 }
 
 /*********************************
- * DELETE BULAN
+ * DELETE MONTH
  *********************************/
 async function deleteMonth(e, monthKey) {
   e.stopPropagation();
@@ -126,14 +158,12 @@ async function deleteMonth(e, monthKey) {
   const batch = db.batch();
 
   snap.forEach((doc) => {
-    const d = doc.data();
-    if (getMonthKey(d.tanggal) === monthKey) {
+    if (getMonthKey(doc.data().tanggal) === monthKey) {
       batch.delete(doc.ref);
     }
   });
 
   await batch.commit();
-  alert("Data bulan berhasil dihapus");
   loadData();
 }
 

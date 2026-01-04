@@ -1,88 +1,166 @@
+:root {
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --muted: #8a8f98;
+  --text: #1c1e21;
+  --border: #e6e8eb;
+  --accent: #2b2e34;
+  --hover: #f0f1f3;
+}
+
 * {
   box-sizing: border-box;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
   margin: 0;
-  background: #0b0b0b;
-  color: #111;
-  padding: 16px;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.container {
-  max-width: 900px;
+/* APP */
+.app {
+  max-width: 1200px;
   margin: auto;
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
+  padding: 28px 22px 44px;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
+/* HEADER */
+.topbar {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px 26px;
+  margin-bottom: 26px;
+  border: 1px solid var(--border);
 }
 
-/* BULAN */
-.month {
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  margin-bottom: 16px;
+.topbar h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.topbar p {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* MONTH CARD */
+.month-card {
+  background: var(--card);
+  border-radius: 22px;
   overflow: hidden;
+  margin-bottom: 22px;
+  border: 1px solid var(--border);
 }
 
+/* MONTH HEADER */
 .month-header {
-  background: #111;
-  color: #fff;
-  padding: 12px 16px;
+  padding: 18px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  background: linear-gradient(to right, #fafafa, #f1f2f4);
 }
 
-.month-header button {
-  background: #fff;
-  color: #111;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* NAMA */
-.names {
-  padding: 12px 16px;
+/* SPLIT VIEW */
+.split-view {
   display: none;
+  grid-template-columns: 300px 1fr;
+  min-height: 460px;
 }
 
-.name {
-  padding: 8px 0;
+/* LEFT PANEL */
+.employee-panel {
+  background: #fafafa;
+  border-right: 1px solid var(--border);
+  padding: 10px 0;
+}
+
+.employee {
+  padding: 14px 22px;
+  margin: 6px 12px;
+  border-radius: 12px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
 }
 
-.name:last-child {
-  border-bottom: none;
+.employee.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* RIGHT PANEL */
+.detail-panel {
+  position: relative;
+  background: #fff;
+  overflow: hidden;
+  padding: 40px; /* 👈 JARAK UTAMA PANEL */
 }
 
 /* DETAIL */
-.details {
-  padding-left: 16px;
-  padding-top: 6px;
+.detail {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: all 0.35s ease;
+
+  /* 👇 TAMBAHAN PENTING */
+  padding: 32px 36px 36px;
+}
+
+.detail.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* DETAIL CONTENT */
+.detail h3 {
+  margin: 0 0 24px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ABSENSI ROW */
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+
+  padding: 16px 4px; /* 👈 jarak vertikal & samping */
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
-  display: none;
 }
 
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
+.row span:first-child {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
-@media (max-width: 600px) {
-  .detail-row {
-    flex-direction: column;
-    gap: 4px;
+.row span:last-child {
+  font-weight: 500;
+  white-space: nowrap;
+  padding-right: 12px; /* 👈 BIKIN GA NEMPEL KANAN */
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .split-view {
+    grid-template-columns: 1fr;
+  }
+
+  .detail {
+    position: relative;
+    opacity: 1;
+    transform: none;
+    padding: 24px;
+  }
+
+  .detail-panel {
+    padding: 0;
   }
 }
